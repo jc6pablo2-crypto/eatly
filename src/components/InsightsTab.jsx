@@ -57,7 +57,7 @@ export default function InsightsTab() {
 
             // Score
             const ai = m.meal_analysis?.[0]?.result || {}
-            let score = 85
+            let score = 0
             if (ai.feel_score) {
                 const vals = Object.values(ai.feel_score)
                 score = Math.floor(vals.reduce((a, b) => a + b, 0) / vals.length)
@@ -92,7 +92,7 @@ export default function InsightsTab() {
     }, [meals, startDate])
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#F7F9FA] px-6 pt-12 pb-10">
+        <div className="flex flex-col bg-[#F7F9FA] px-6 pt-12 pb-10">
 
             {/* Header */}
             <div className="flex justify-between items-start mb-8">

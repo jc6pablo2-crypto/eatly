@@ -28,13 +28,15 @@ export default function DiaryTab({ onSelectMeal }) {
     }, [user])
 
     const formatTime = (ts) => {
-        return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }).format(new Date(ts))
+        return new Intl.DateTimeFormat('fr-FR', { hour: 'numeric', minute: 'numeric', hour12: false }).format(new Date(ts))
     }
 
     const formatDate = (ts) => {
         const d = new Date(ts)
-        if (d.toDateString() === new Date().toDateString()) return 'Today'
-        return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(d)
+        if (d.toDateString() === new Date().toDateString()) return 'Aujourd\'hui'
+        const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1)
+        if (d.toDateString() === yesterday.toDateString()) return 'Hier'
+        return new Intl.DateTimeFormat('fr-FR', { weekday: 'short', month: 'short', day: 'numeric' }).format(d)
     }
 
     // Group meals by date
@@ -47,11 +49,11 @@ export default function DiaryTab({ onSelectMeal }) {
 
     // Separate today from past dates for free users
     const dateKeys = Object.keys(grouped)
-    const todayKey = dateKeys.find(k => k === 'Today')
-    const pastKeys = dateKeys.filter(k => k !== 'Today')
+    const todayKey = dateKeys.find(k => k === 'Aujourd\'hui')
+    const pastKeys = dateKeys.filter(k => k !== 'Aujourd\'hui')
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#F7F9FA] px-6 pt-12 pb-10">
+        <div className="flex flex-col bg-[#F7F9FA] px-6 pt-12 pb-10">
             <div className="flex justify-between items-start mb-8">
                 <div>
                     <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Agenda</h1>

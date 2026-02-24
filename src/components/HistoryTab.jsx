@@ -89,7 +89,7 @@ export default function HistoryTab({ onSeeAll, onSelectMeal, onShowProfile }) {
             {/* Header */}
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <p className="text-gray-400 font-semibold mb-1 text-[15px]">{today.toLocaleString('en-US', { weekday: 'short', day: 'numeric', month: 'long' })}</p>
+                    <p className="text-gray-400 font-semibold mb-1 text-[15px]">{today.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                     <h1 className="text-3xl font-extrabold tracking-tight text-foreground capitalize">Bonjour {displayName}</h1>
                 </div>
                 <div className="flex items-center gap-3">

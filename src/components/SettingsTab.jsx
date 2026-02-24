@@ -167,7 +167,7 @@ function MenuItem({ icon: Icon, iconColor, iconBg, label, badge, onClick }) {
     return (
         <button onClick={onClick} className="w-full flex items-center justify-between p-3 active:opacity-70 transition-opacity rounded-xl">
             <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center ${iconBg}`}><Icon className={`w-4.5 h-4.5 ${iconColor}`} /></div>
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center ${iconBg}`}><Icon className={`w-5 h-5 ${iconColor}`} /></div>
                 <span className="text-sm font-semibold text-foreground">{label}</span>
             </div>
             <div className="flex items-center gap-2">

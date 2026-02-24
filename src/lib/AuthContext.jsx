@@ -44,6 +44,7 @@ export function AuthProvider({ children }) {
         profile,
         loading,
         signOut: () => supabase.auth.signOut(),
+        refreshProfile: () => user && fetchProfile(user.id),
         updateProfile: async (updates) => {
             const { data, error } = await supabase
                 .from('profiles')

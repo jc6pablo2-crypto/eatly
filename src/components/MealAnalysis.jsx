@@ -14,7 +14,7 @@ export default function MealAnalysis({ image, meal, analysis, onClose }) {
 
     // Calculate global glow score from the 5 indices
     const calculateGlow = () => {
-        if (!ai.feel_score) return 85
+        if (!ai.feel_score) return 0
         const vals = Object.values(ai.feel_score)
         return Math.floor(vals.reduce((a, b) => a + b, 0) / vals.length)
     }
@@ -30,11 +30,15 @@ export default function MealAnalysis({ image, meal, analysis, onClose }) {
             {/* Header (Overlapping Image) */}
             <div className="relative h-[45vh] shrink-0 bg-foreground rounded-b-[3.5rem] overflow-hidden">
                 {/* Background Image / Captured Image */}
-                <img
-                    src={image || "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop"}
-                    alt="Meal Analysis"
-                    className="absolute inset-0 w-full h-full object-cover opacity-80"
-                />
+                {image ? (
+                    <img
+                        src={image}
+                        alt="Meal Analysis"
+                        className="absolute inset-0 w-full h-full object-cover opacity-80"
+                    />
+                ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-brand-400 to-brand-600"></div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-black/40"></div>
 
                 <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center pt-safe z-10 pt-12">

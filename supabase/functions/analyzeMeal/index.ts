@@ -129,64 +129,53 @@ Nutriments: ${JSON.stringify(meal.context.nutriments)}`
             }
         }
 
-        const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
-        if (!anthropicKey) {
-            throw new Error('Anthropic API key is not configured')
+        const geminiKey = Deno.env.get('GEMINI_API_KEY')
+        if (!geminiKey) {
+            throw new Error('Gemini API key is not configured')
         }
 
-        // Call Anthropic Vision (Claude 3.5 Sonnet)
-        const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        // Call Google Gemini 2.5 Flash
+        const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': anthropicKey,
-                'anthropic-version': '2023-06-01'
             },
             body: JSON.stringify({
-                model: 'claude-3-5-sonnet-20240620',
-                max_tokens: 1024,
-                system: systemPrompt,
-                messages: [
-                    {
-                        role: 'user',
-                        content: [
-                            {
-                                type: 'image',
-                                source: {
-                                    type: 'base64',
-                                    media_type: mediaType,
-                                    data: base64Image
-                                }
-                            },
-                            {
-                                type: 'text',
-                                text: userPromptText
-                            }
-                        ]
-                    }
-                ]
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                contents: [{
+                    parts: [
+                        { inlineData: { mimeType: mediaType, data: base64Image } },
+                        { text: userPromptText }
+                    ]
+                }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    temperature: 0.4
+                }
             })
         })
 
-        if (!anthropicResponse.ok) {
-            const err = await anthropicResponse.text()
-            throw new Error(`Anthropic error: ${anthropicResponse.status} ${err}`)
+        if (!geminiResponse.ok) {
+            const err = await geminiResponse.text()
+            throw new Error(`Gemini API error: ${geminiResponse.status} ${err}`)
         }
 
-        const resultBody = await anthropicResponse.json()
-        const textContent = resultBody.content[0].text
+        const resultBody = await geminiResponse.json()
+        const textContent = resultBody.candidates?.[0]?.content?.parts?.[0]?.text
 
-        // Parse JSON safely
+        if (!textContent) {
+            throw new Error('Empty response from Gemini API')
+        }
+
+        // Because we enforced 'application/json' in generationConfig, 
+        // Gemini guarantees the textContent is pure JSON.
         let analysisResult: any
         try {
-            // Strip out markdown code blocks if the AI ignored the instruction
-            let cleanText = textContent.replace(/```json/gi, '').replace(/```/g, '').trim()
-            // Try to extract just the first JSON object
-            const jsonStrMatch = cleanText.match(/\{[\s\S]*\}/)
-            cleanText = jsonStrMatch ? jsonStrMatch[0] : cleanText
-            analysisResult = JSON.parse(cleanText)
+            analysisResult = JSON.parse(textContent)
         } catch (_e) {
-            throw new Error('Failed to parse Anthropic response as JSON. AI Response: ' + textContent)
+            throw new Error('Gemini guaranteed JSON but parsing failed: ' + textContent)
         }
 
         // Save back to DB

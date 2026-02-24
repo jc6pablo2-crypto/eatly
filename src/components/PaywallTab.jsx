@@ -17,31 +17,21 @@ export default function PaywallTab() {
         setError(null)
 
         try {
-            const { data: { session: authSession } } = await supabase.auth.getSession()
-            const token = authSession?.access_token
-
-            const res = await fetch(
-                `https://okvemteinuvwmemnfiog.supabase.co/functions/v1/create-checkout-session`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        priceId: PRICE_ID,
-                        successUrl: `${window.location.origin}/success`,
-                        cancelUrl: `${window.location.origin}/dashboard`,
-                    }),
+            const { data, error: functionError } = await supabase.functions.invoke('create-checkout-session', {
+                body: {
+                    priceId: PRICE_ID,
+                    successUrl: `${window.location.origin}/success`,
+                    cancelUrl: `${window.location.origin}/dashboard`,
                 }
-            )
+            })
 
-            const data = await res.json()
-
-            if (data.url) {
+            if (functionError) {
+                console.error('Checkout function error:', functionError)
+                setError(functionError.message || 'Erreur lors de la création de la session de paiement.')
+            } else if (data?.url) {
                 window.location.href = data.url
             } else {
-                setError(data.error || 'Erreur lors de la création de la session de paiement.')
+                setError(data?.error || 'Erreur lors de la création de la session de paiement.')
             }
         } catch (err) {
             console.error('Checkout error:', err)

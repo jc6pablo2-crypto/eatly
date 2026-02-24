@@ -34,30 +34,16 @@ export async function createMealRecord(userId, imagePath, context) {
 }
 
 export async function analyzeMeal(mealId) {
-    const { data: sessionData } = await supabase.auth.getSession()
-    const token = sessionData?.session?.access_token
-
-    if (!token) {
-        throw new Error('Session expirée. Reconnectez-vous.')
-    }
-
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-    const response = await fetch(`${supabaseUrl}/functions/v1/analyzeMeal`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ meal_id: mealId })
+    const { data, error } = await supabase.functions.invoke('analyzeMeal', {
+        body: { meal_id: mealId }
     })
 
-    if (!response.ok) {
-        const errorText = await response.text()
-        console.error('[Eatly] Edge Function error:', response.status, errorText)
-        throw new Error(`Analyse IA échouée (${response.status}): ${errorText}`)
+    if (error) {
+        console.error('[Eatly] Edge Function error:', error)
+        throw new Error(`Analyse IA échouée: ${error.message || 'Erreur inconnue'}`)
     }
 
-    return response.json()
+    return data
 }
 
 export async function saveMealFeedback(mealId, userId, sliders) {

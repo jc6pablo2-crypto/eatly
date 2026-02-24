@@ -17,14 +17,23 @@ serve(async (req: Request) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const authHeader = req.headers.get('Authorization')
+
+    if (!supabaseUrl || !authHeader) {
+      throw new Error('Missing environment or authorization header')
+    }
+
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      supabaseUrl,
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    const jwt = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(jwt)
+
     if (authError || !user) {
+      console.error('[Eatly] Checkout Auth Error:', authError)
       throw new Error('Unauthorized')
     }
 

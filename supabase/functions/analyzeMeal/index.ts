@@ -22,32 +22,49 @@ serve(async (req: Request) => {
             throw new Error('meal_id is required')
         }
 
-        const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL')!,
-            Deno.env.get('SUPABASE_ANON_KEY')!,
-            { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-        )
+        // Verify API keys exist
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')
+        const authHeader = req.headers.get('Authorization')
 
-        // Verify user is authenticated
-        const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
-        if (userError || !user) {
-            throw new Error('Unauthorized')
+        if (!supabaseUrl || !authHeader) {
+            throw new Error('Missing environment or authorization header')
         }
 
+        const supabaseClient = createClient(
+            supabaseUrl,
+            Deno.env.get('SUPABASE_ANON_KEY')!
+        )
+
+        // Verify user is authenticated using their specific JWT token passed in the header
+        const jwt = authHeader.replace('Bearer ', '')
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser(jwt)
+
+        if (userError || !user) {
+            console.error('[Eatly] Edge Function Auth Error:', userError)
+            throw new Error('Unauthorized or invalid JWT')
+        }
+
+        // Create Admin client to bypass RLS for internal server operations
+        const supabaseAdmin = createClient(
+            supabaseUrl,
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+        )
+
         // Get the meal to find the image path
-        const { data: meal, error: mealError } = await supabaseClient
+        const { data: meal, error: mealError } = await supabaseAdmin
             .from('meals')
             .select('image_path, context')
             .eq('id', meal_id)
-            .eq('user_id', user.id)
+            .eq('user_id', user.id) // Enforce security manually
             .single()
 
         if (mealError || !meal) {
+            console.error('[Eatly] Fetch meal error:', mealError)
             throw new Error('Meal not found')
         }
 
         // Get signed URL to download image or download directly via Supabase client
-        const { data: fileData, error: downloadError } = await supabaseClient
+        const { data: fileData, error: downloadError } = await supabaseAdmin
             .storage
             .from('meal_photos')
             .download(meal.image_path)

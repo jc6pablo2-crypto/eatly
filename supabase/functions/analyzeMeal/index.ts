@@ -86,18 +86,18 @@ serve(async (req: Request) => {
         const mediaType = 'image/jpeg'
 
         let systemPrompt = `You are an expert wellness, nutrition, and lifestyle AI. 
-Analyze the provided meal image and return your analysis strictly as a JSON object matching this schema. Replace the type placeholders (like "number", "string", "boolean") with your actual estimated values for the meal:
+Analyze the provided meal image and return your analysis strictly as a JSON object with the following schema:
 {
-  "components": [{"name": "string (food item name)", "confidence": "number (0.0 to 1.0)"}],
-  "macros": {"calories": "number (integer kcal)", "protein_g": "number (integer)", "carbs_g": "number (integer)", "fat_g": "number (integer)"},
-  "feel_score": {"energy": "number (0-100)", "satiety": "number (0-100)", "digestion": "number (0-100)", "sleep": "number (0-100)", "cravings": "number (0-100)"},
-  "why": ["string (bullet points explaining the scores)"],
-  "toxic_score": {"score": "number (0-100, 100 is highly toxic)", "additives": ["string"], "level": "Low" | "Medium" | "High" | "Critical"},
+  "components": [{"name": "string", "confidence": 0.0 - 1.0}],
+  "macros": {"calories": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0},
+  "feel_score": {"energy": 0-100, "satiety": 0-100, "digestion": 0-100, "sleep": 0-100, "cravings": 0-100},
+  "why": ["string"],
+  "toxic_score": {"score": 0, "additives": [], "level": "Low"},
   "micro_swap": {"title": "string", "steps": ["string"]},
   "warnings": ["string"],
-  "prediction": {"energy_impact": "string (impact of this meal on energy over the next few hours)", "advice": "string (proactive tip to balance the meal)", "fatigue_warning": "boolean (true if the meal might cause a blood sugar spike or crash, false otherwise)"}
+  "prediction": {"energy_impact": "string (impact of this meal on energy over the next few hours)", "advice": "string (proactive tip to balance the meal)", "fatigue_warning": boolean (true if the meal might cause a blood sugar spike or crash, false otherwise)}
 }
-IMPORTANT: You MUST return ONLY a valid JSON object. Do not include any introductory text, closing text, or markdown code block syntax (like \`\`\`json). Fill the JSON values based on your visual analysis. DO NOT return literal strings like "number" or "0", return the actual computed integers or strings! All textual values inside the JSON should be in French, but keep the exact JSON keys as defined above. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach.`
+IMPORTANT: You MUST return ONLY a valid JSON object. Do not include any introductory text, closing text, or markdown code block syntax (like \`\`\`json). All textual values inside the JSON should be in French, but keep the exact JSON keys as defined above. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach.`
 
         let userPromptText = "Analyze this meal photo."
 
@@ -109,15 +109,15 @@ Analyze this data carefully to determine if the product is ultra-processed, dang
 Return your analysis strictly as a JSON object with the following schema:
 {
   "components": [{"name": "string (product name)", "confidence": 1.0}],
-  "macros": {"calories": "number (kcal)", "protein_g": "number", "carbs_g": "number", "fat_g": "number"},
-  "feel_score": {"energy": "number (0-100)", "satiety": "number (0-100)", "digestion": "number (0-100)", "sleep": "number (0-100)", "cravings": "number (0-100)"},
+  "macros": {"calories": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0},
+  "feel_score": {"energy": 0-100, "satiety": 0-100, "digestion": 0-100, "sleep": 0-100, "cravings": 0-100},
   "why": ["string"],
-  "toxic_score": {"score": "number (0-100, 100 is highly toxic)", "additives": ["string"], "level": "Low" | "Medium" | "High" | "Critical"},
+  "toxic_score": {"score": 0-100 (where 100 is highly toxic/ultra-processed, 0 is natural/whole food), "additives": ["string"], "level": "Low" | "Medium" | "High" | "Critical"},
   "micro_swap": {"title": "string", "steps": ["string"]},
   "warnings": ["string"],
-  "prediction": {"energy_impact": "string", "advice": "string", "fatigue_warning": "boolean"}
+  "prediction": {"energy_impact": "string", "advice": "string", "fatigue_warning": boolean}
 }
-IMPORTANT: You MUST return ONLY a valid JSON object. Do not include any introductory text, closing text, or markdown code block syntax (like \`\`\`json). Fill the JSON values correctly. DO NOT output zeroes unless the value is actually zero. All textual values inside the JSON should be in French, but keep the exact JSON keys as defined above. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach, but be very clear about industrial food risks.`
+IMPORTANT: You MUST return ONLY a valid JSON object. Do not include any introductory text, closing text, or markdown code block syntax (like \`\`\`json). All textual values inside the JSON should be in French, but keep the exact JSON keys as defined above. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach, but be very clear about industrial food risks.`
 
                 userPromptText = `Analyze this barcode product. 
 Product Name: ${meal.context.product_name}

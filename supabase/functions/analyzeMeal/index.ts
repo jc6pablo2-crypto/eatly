@@ -86,18 +86,21 @@ serve(async (req: Request) => {
         const mediaType = 'image/jpeg'
 
         let systemPrompt = `You are an expert wellness, nutrition, and lifestyle AI. 
-Analyze the provided meal image and return your analysis strictly as a JSON object with the following schema:
+Analyze the provided meal image and return your analysis strictly as a valid JSON object matching the structure below. 
+IMPORTANT: The values in the structure below are just EXAMPLES. You MUST replace all strings, numbers, and booleans with your actual precise estimated values for the user's meal. Do NOT copy the example values! For example, do not output 450 for calories unless the meal is actually 450 calories.
+
 {
-  "components": [{"name": "string", "confidence": 0.0 - 1.0}],
-  "macros": {"calories": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0},
-  "feel_score": {"energy": 0-100, "satiety": 0-100, "digestion": 0-100, "sleep": 0-100, "cravings": 0-100},
-  "why": ["string"],
-  "toxic_score": {"score": 0, "additives": [], "level": "Low"},
-  "micro_swap": {"title": "string", "steps": ["string"]},
-  "warnings": ["string"],
-  "prediction": {"energy_impact": "string (impact of this meal on energy over the next few hours)", "advice": "string (proactive tip to balance the meal)", "fatigue_warning": boolean (true if the meal might cause a blood sugar spike or crash, false otherwise)}
+  "components": [{"name": "Saumon et Brocolis", "confidence": 0.95}],
+  "macros": {"calories": 450, "protein_g": 35, "carbs_g": 15, "fat_g": 20},
+  "feel_score": {"energy": 85, "satiety": 90, "digestion": 80, "sleep": 80, "cravings": 10},
+  "why": ["High protein promotes satiety.", "Rich in Omega-3."],
+  "toxic_score": {"score": 5, "additives": [], "level": "Low"},
+  "micro_swap": {"title": "Ajouter de l'huile d'olive", "steps": ["Un filet d'huile pour de bonnes graisses."]},
+  "warnings": ["Aucun avertissement particulier."],
+  "prediction": {"energy_impact": "Énergie stable sur 4 heures", "advice": "Boire de l'eau", "fatigue_warning": false}
 }
-IMPORTANT: You MUST return ONLY a valid JSON object. Do not include any introductory text, closing text, or markdown code block syntax (like \`\`\`json). All textual values inside the JSON should be in French, but keep the exact JSON keys as defined above. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach.`
+
+CRITICAL: Return ONLY the JSON object. Do not include markdown formatting (like \`\`\`json). All textual values should be in French, but keep the exact JSON keys as defined.`
 
         let userPromptText = "Analyze this meal photo."
 
@@ -108,16 +111,17 @@ The user has scanned a food product barcode. You will be provided with the produ
 Analyze this data carefully to determine if the product is ultra-processed, dangerous, or healthy.
 Return your analysis strictly as a JSON object with the following schema:
 {
-  "components": [{"name": "string (product name)", "confidence": 1.0}],
-  "macros": {"calories": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0},
-  "feel_score": {"energy": 0-100, "satiety": 0-100, "digestion": 0-100, "sleep": 0-100, "cravings": 0-100},
-  "why": ["string"],
-  "toxic_score": {"score": 0-100 (where 100 is highly toxic/ultra-processed, 0 is natural/whole food), "additives": ["string"], "level": "Low" | "Medium" | "High" | "Critical"},
-  "micro_swap": {"title": "string", "steps": ["string"]},
-  "warnings": ["string"],
-  "prediction": {"energy_impact": "string", "advice": "string", "fatigue_warning": boolean}
+  "components": [{"name": "Nom du produit", "confidence": 0.99}],
+  "macros": {"calories": 250, "protein_g": 5, "carbs_g": 30, "fat_g": 12},
+  "feel_score": {"energy": 60, "satiety": 40, "digestion": 50, "sleep": 70, "cravings": 80},
+  "why": ["Explication 1", "Explication 2"],
+  "toxic_score": {"score": 85, "additives": ["E150d", "E621"], "level": "High"},
+  "micro_swap": {"title": "Alternative saine", "steps": ["Étape 1"]},
+  "warnings": ["Contient beaucoup de sucre"],
+  "prediction": {"energy_impact": "Pic d'énergie court", "advice": "Conseil santé", "fatigue_warning": true}
 }
-IMPORTANT: You MUST return ONLY a valid JSON object. Do not include any introductory text, closing text, or markdown code block syntax (like \`\`\`json). All textual values inside the JSON should be in French, but keep the exact JSON keys as defined above. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach, but be very clear about industrial food risks.`
+
+CRITICAL: Return ONLY the JSON object. Do not include markdown formatting (like \`\`\`json). All textual values should be in French, but keep the exact JSON keys as defined. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach, but be very clear about industrial food risks.`
 
                 userPromptText = `Analyze this barcode product. 
 Product Name: ${meal.context.product_name}

@@ -39,7 +39,6 @@ export default function Signup() {
             setLoading(false)
 
             if (authError) {
-                // Translate common Supabase errors to French
                 const msg = authError.message
                 if (msg.includes('already registered')) {
                     setError('Cet email est déjà utilisé. Essayez de vous connecter.')
@@ -53,11 +52,9 @@ export default function Signup() {
                     setError(msg)
                 }
             } else if (data?.user) {
-                // Auto-confirmed: user has a session, go to onboarding
                 if (data.session) {
                     navigate('/onboarding')
                 } else {
-                    // Email confirmation needed
                     navigate('/verify')
                 }
             }
@@ -74,23 +71,23 @@ export default function Signup() {
 
     return (
         <div className="page-container flex flex-col px-6 bg-white animated-gradient-bg">
-            <Link to="/" className="absolute top-12 left-6 p-2 bg-white/50 backdrop-blur-md rounded-full shadow-sm text-gray-500 hover:text-foreground transition-colors z-20">
+            <Link to="/" className="absolute top-8 left-6 p-2 bg-white/50 backdrop-blur-md rounded-full shadow-sm text-gray-500 hover:text-foreground transition-colors z-20">
                 <ChevronLeft className="w-6 h-6" />
             </Link>
 
-            <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full z-10 pt-16">
-                <div className="text-center mb-10">
-                    <div className="w-16 h-16 bg-white text-brand-600 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 shadow-lg border border-gray-100">
-                        <Feather className="w-8 h-8" />
+            <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full z-10 pt-10">
+                <div className="text-center mb-6">
+                    <div className="w-14 h-14 bg-white text-brand-600 rounded-[1.2rem] flex items-center justify-center mx-auto mb-4 shadow-lg border border-gray-100">
+                        <Feather className="w-7 h-7" />
                     </div>
-                    <h1 className="text-[2rem] font-extrabold tracking-tight mb-2 text-foreground">S'inscrire</h1>
-                    <p className="text-gray-500 font-medium text-lg">Capturez votre bien-être</p>
+                    <h1 className="text-[1.75rem] font-extrabold tracking-tight mb-1 text-foreground">S'inscrire</h1>
+                    <p className="text-gray-500 font-medium text-base">Capturez votre bien-être</p>
                 </div>
 
-                <div className="glass-card p-8 bg-white/80">
-                    {error && <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm mb-6 text-center font-medium border border-red-100">{error}</div>}
+                <div className="glass-card p-6 bg-white/80">
+                    {error && <div className="bg-red-50 text-red-600 p-3 rounded-2xl text-sm mb-4 text-center font-medium border border-red-100">{error}</div>}
 
-                    <form onSubmit={handleSignup} className="space-y-5">
+                    <form onSubmit={handleSignup} className="space-y-4">
                         <div className="flex gap-4">
                             <div className="relative group flex-1">
                                 <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-brand-500 transition-colors" />
@@ -140,20 +137,20 @@ export default function Signup() {
                             />
                         </div>
 
-                        <div className="pt-4">
+                        <div className="pt-3">
                             <button type="submit" disabled={loading} className="btn-primary w-full text-lg">
                                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Créer un compte'}
                                 {!loading && <ArrowRight className="w-5 h-5 ml-1" />}
                             </button>
                         </div>
 
-                        <p className="text-xs text-center text-gray-400 mt-6 leading-relaxed">
-                            En vous inscrivant, vous acceptez nos Termes et Conditions et notre Politique de Confidentialité.
+                        <p className="text-xs text-center text-gray-400 mt-3 leading-relaxed">
+                            En vous inscrivant, vous acceptez nos Termes et Conditions.
                         </p>
                     </form>
                 </div>
 
-                <p className="text-center text-sm text-gray-500 mt-10 font-medium">
+                <p className="text-center text-sm text-gray-500 mt-6 mb-4 font-medium">
                     Déjà un compte ?{' '}
                     <Link to="/login" className="text-foreground font-bold hover:text-brand-600 transition-colors border-b-2 border-foreground hover:border-brand-600 pb-0.5">
                         Se connecter

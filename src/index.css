@@ -70,14 +70,23 @@
   }
 
   .page-container {
-    @apply min-h-screen max-w-md mx-auto relative overflow-hidden;
-    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 1.5rem));
+    @apply max-w-md mx-auto relative overflow-hidden;
+    height: 100dvh;
     padding-top: env(safe-area-inset-top, 0rem);
   }
 
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl rounded-t-[2.5rem];
-    padding-bottom: env(safe-area-inset-bottom, 1.5rem);
+    @apply fixed bottom-0 left-1/2 -translate-x-1/2 z-50 bg-white shadow-2xl rounded-t-[2.5rem] w-full max-w-md;
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
   .floating-scan-btn {

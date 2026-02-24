@@ -88,25 +88,25 @@ export default function Login() {
 
     return (
         <div className="page-container flex flex-col px-6 bg-white animated-gradient-bg">
-            <Link to="/" className="absolute top-12 left-6 p-2 bg-white/50 backdrop-blur-md rounded-full shadow-sm text-gray-500 hover:text-foreground transition-colors z-20">
+            <Link to="/" className="absolute top-8 left-6 p-2 bg-white/50 backdrop-blur-md rounded-full shadow-sm text-gray-500 hover:text-foreground transition-colors z-20">
                 <ChevronLeft className="w-6 h-6" />
             </Link>
 
-            <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full z-10 pt-16">
-                <div className="text-center mb-10">
-                    <div className="w-16 h-16 bg-foreground text-brand-50 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 shadow-xl relative overflow-hidden">
+            <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full z-10 pt-10">
+                <div className="text-center mb-6">
+                    <div className="w-14 h-14 bg-foreground text-brand-50 rounded-[1.2rem] flex items-center justify-center mx-auto mb-4 shadow-xl relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-tr from-brand-600/40 to-transparent"></div>
-                        <Sparkles className="w-8 h-8 relative z-10" />
+                        <Sparkles className="w-7 h-7 relative z-10" />
                     </div>
-                    <h1 className="text-[2rem] font-extrabold tracking-tight mb-2 text-foreground">Connexion</h1>
-                    <p className="text-gray-500 font-medium text-lg">Retrouvez votre routine</p>
+                    <h1 className="text-[1.75rem] font-extrabold tracking-tight mb-1 text-foreground">Connexion</h1>
+                    <p className="text-gray-500 font-medium text-base">Retrouvez votre routine</p>
                 </div>
 
-                <div className="glass-card p-8 bg-white/80">
-                    {error && <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm mb-6 text-center font-medium border border-red-100">{error}</div>}
-                    {success && <div className="bg-emerald-50 text-emerald-600 p-4 rounded-2xl text-sm mb-6 text-center font-medium border border-emerald-100">{success}</div>}
+                <div className="glass-card p-6 bg-white/80">
+                    {error && <div className="bg-red-50 text-red-600 p-3 rounded-2xl text-sm mb-4 text-center font-medium border border-red-100">{error}</div>}
+                    {success && <div className="bg-emerald-50 text-emerald-600 p-3 rounded-2xl text-sm mb-4 text-center font-medium border border-emerald-100">{success}</div>}
 
-                    <form onSubmit={handleLogin} className="space-y-5">
+                    <form onSubmit={handleLogin} className="space-y-4">
                         <div className="relative group">
                             <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-brand-500 transition-colors" />
                             <input
@@ -156,7 +156,7 @@ export default function Login() {
                     </form>
                 </div>
 
-                <p className="text-center text-sm text-gray-500 mt-10 font-medium">
+                <p className="text-center text-sm text-gray-500 mt-6 mb-4 font-medium">
                     Nouveau sur l'app ?{' '}
                     <Link to="/signup" className="text-foreground font-bold hover:text-brand-600 transition-colors border-b-2 border-foreground hover:border-brand-600 pb-0.5">
                         Créer un compte

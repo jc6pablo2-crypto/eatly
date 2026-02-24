@@ -13,7 +13,7 @@ export default function Dashboard() {
 
     return (
         <div className="page-container flex flex-col bg-background">
-            <main className="flex-1 overflow-y-auto w-full pb-28 pt-safe">
+            <main className="flex-1 overflow-y-auto w-full pb-28 hide-scrollbar">
                 {activeTab === 'home' && <HistoryTab onSeeAll={() => setActiveTab('diary')} onSelectMeal={setSelectedMeal} />}
                 {activeTab === 'diary' && <DiaryTab onSelectMeal={setSelectedMeal} />}
                 {activeTab === 'capture' && <MealCapture />}

@@ -23,11 +23,16 @@ export default function ResetPassword() {
         e.preventDefault()
         setLoading(true)
         setMessage({ type: '', text: '' })
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/reset-password`,
-        })
-        if (error) setMessage({ type: 'error', text: error.message })
-        else setMessage({ type: 'success', text: 'Email de réinitialisation envoyé !' })
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+            })
+            if (error) setMessage({ type: 'error', text: error.message })
+            else setMessage({ type: 'success', text: 'Email de réinitialisation envoyé ! Vérifiez votre boîte mail.' })
+        } catch (err) {
+            console.error('Reset password error:', err)
+            setMessage({ type: 'error', text: 'Impossible de contacter le serveur. Vérifiez votre connexion internet.' })
+        }
         setLoading(false)
     }
 
@@ -35,11 +40,16 @@ export default function ResetPassword() {
         e.preventDefault()
         setLoading(true)
         setMessage({ type: '', text: '' })
-        const { error } = await supabase.auth.updateUser({ password: newPassword })
-        if (error) setMessage({ type: 'error', text: error.message })
-        else {
-            setMessage({ type: 'success', text: 'Mot de passe mis à jour !' })
-            setTimeout(() => navigate('/'), 2000)
+        try {
+            const { error } = await supabase.auth.updateUser({ password: newPassword })
+            if (error) setMessage({ type: 'error', text: error.message })
+            else {
+                setMessage({ type: 'success', text: 'Mot de passe mis à jour avec succès !' })
+                setTimeout(() => navigate('/'), 2000)
+            }
+        } catch (err) {
+            console.error('Update password error:', err)
+            setMessage({ type: 'error', text: 'Impossible de contacter le serveur. Vérifiez votre connexion internet.' })
         }
         setLoading(false)
     }

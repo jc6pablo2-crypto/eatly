@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 import { Mail, Lock, ArrowRight, Loader2, Sparkles, ChevronLeft } from 'lucide-react'
 
 export default function Login() {
@@ -15,20 +15,75 @@ export default function Login() {
         e.preventDefault()
         setLoading(true)
         setError(null)
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) setError(error.message)
-        else navigate('/')
-        setLoading(false)
+
+        if (!isSupabaseConfigured) {
+            setError('Configuration Supabase manquante. Contactez le support.')
+            setLoading(false)
+            return
+        }
+
+        try {
+            const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+            setLoading(false)
+
+            if (authError) {
+                const msg = authError.message
+                if (msg.includes('Invalid login credentials')) {
+                    setError('Email ou mot de passe incorrect.')
+                } else if (msg.includes('rate limit')) {
+                    setError('Trop de tentatives. Veuillez patienter quelques minutes.')
+                } else if (msg.includes('Email not confirmed')) {
+                    setError('Votre email n\'a pas été confirmé. Vérifiez votre boîte mail.')
+                } else {
+                    setError(msg)
+                }
+            } else {
+                navigate('/')
+            }
+        } catch (err) {
+            setLoading(false)
+            console.error('Login network error:', err)
+            if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+                setError('Impossible de contacter le serveur. Vérifiez votre connexion internet et réessayez.')
+            } else {
+                setError(`Erreur inattendue: ${err.message}`)
+            }
+        }
     }
 
     const handleMagicLink = async () => {
         if (!email) return setError('Veuillez entrer votre email pour le lien magique')
+
+        if (!isSupabaseConfigured) {
+            setError('Configuration Supabase manquante. Contactez le support.')
+            return
+        }
+
         setLoading(true)
         setError(null)
-        const { error } = await supabase.auth.signInWithOtp({ email })
-        if (error) setError(error.message)
-        else setSuccess('Lien magique envoyé. Vérifiez vos emails !')
-        setLoading(false)
+
+        try {
+            const { error: authError } = await supabase.auth.signInWithOtp({ email })
+            setLoading(false)
+
+            if (authError) {
+                if (authError.message.includes('rate limit')) {
+                    setError('Trop de tentatives. Veuillez patienter quelques minutes.')
+                } else {
+                    setError(authError.message)
+                }
+            } else {
+                setSuccess('Lien magique envoyé. Vérifiez vos emails !')
+            }
+        } catch (err) {
+            setLoading(false)
+            console.error('Magic link network error:', err)
+            if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+                setError('Impossible de contacter le serveur. Vérifiez votre connexion internet et réessayez.')
+            } else {
+                setError(`Erreur inattendue: ${err.message}`)
+            }
+        }
     }
 
     return (

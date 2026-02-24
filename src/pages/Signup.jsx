@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 import { Mail, Lock, ArrowRight, Loader2, Feather, ChevronLeft, User } from 'lucide-react'
 
 export default function Signup() {
@@ -16,23 +16,59 @@ export default function Signup() {
         e.preventDefault()
         setLoading(true)
         setError(null)
-        const { error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                emailRedirectTo: `${window.location.origin}/auth/callback`,
-                data: {
-                    first_name: firstName,
-                    last_name: lastName
+
+        if (!isSupabaseConfigured) {
+            setError('Configuration Supabase manquante. Contactez le support.')
+            setLoading(false)
+            return
+        }
+
+        try {
+            const { data, error: authError } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
+                    data: {
+                        first_name: firstName,
+                        last_name: lastName
+                    }
+                }
+            })
+
+            setLoading(false)
+
+            if (authError) {
+                // Translate common Supabase errors to French
+                const msg = authError.message
+                if (msg.includes('already registered')) {
+                    setError('Cet email est déjà utilisé. Essayez de vous connecter.')
+                } else if (msg.includes('rate limit')) {
+                    setError('Trop de tentatives. Veuillez patienter quelques minutes.')
+                } else if (msg.includes('password')) {
+                    setError('Le mot de passe doit contenir au moins 6 caractères.')
+                } else if (msg.includes('email')) {
+                    setError('Adresse email invalide.')
+                } else {
+                    setError(msg)
+                }
+            } else if (data?.user) {
+                // Auto-confirmed: user has a session, go to onboarding
+                if (data.session) {
+                    navigate('/onboarding')
+                } else {
+                    // Email confirmation needed
+                    navigate('/verify')
                 }
             }
-        })
-
-        setLoading(false)
-        if (error) {
-            setError(error.message)
-        } else {
-            navigate('/verify')
+        } catch (err) {
+            setLoading(false)
+            console.error('Signup network error:', err)
+            if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+                setError('Impossible de contacter le serveur. Vérifiez votre connexion internet et réessayez.')
+            } else {
+                setError(`Erreur inattendue: ${err.message}`)
+            }
         }
     }
 

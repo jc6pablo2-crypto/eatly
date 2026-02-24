@@ -12,6 +12,7 @@ import ResetPassword from './pages/ResetPassword'
 import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import Success from './pages/Success'
+import Paywall from './pages/Paywall'
 
 function PrivateRoute({ children }) {
   const { user, loading, profile } = useAuth()
@@ -47,6 +48,12 @@ function App() {
         <Route path="/dashboard" element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path="/paywall" element={
+          <PrivateRoute>
+            <Paywall />
           </PrivateRoute>
         } />
 

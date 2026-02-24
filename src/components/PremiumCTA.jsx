@@ -14,7 +14,7 @@ export default function PremiumCTA({ title, description, variant = 'box' }) {
                         <p className="text-xs text-brand-600/70 font-medium">{description}</p>
                     </div>
                 </div>
-                <Link to="/#pricing" className="bg-foreground text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 active:scale-95 transition-transform whitespace-nowrap">
+                <Link to="/paywall" className="bg-foreground text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 active:scale-95 transition-transform whitespace-nowrap">
                     Débloquer <Sparkles className="w-3.5 h-3.5" />
                 </Link>
             </div>
@@ -38,7 +38,7 @@ export default function PremiumCTA({ title, description, variant = 'box' }) {
                     {description}
                 </p>
 
-                <Link to="/#pricing" className="w-full py-3.5 text-center rounded-xl bg-foreground text-white font-extrabold hover:bg-gray-800 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                <Link to="/paywall" className="w-full py-3.5 text-center rounded-xl bg-foreground text-white font-extrabold hover:bg-gray-800 flex items-center justify-center gap-2 active:scale-95 transition-all">
                     Passer à Eatly Premium <ArrowRight className="w-4 h-4" />
                 </Link>
             </div>

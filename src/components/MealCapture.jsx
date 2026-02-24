@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowLeft, Tag, ScanLine, Image as ImageIcon, SlidersHorizontal, Flame, Leaf, ArrowRight, Loader2, Barcode, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Tag, ScanLine, Image as ImageIcon, SlidersHorizontal, Flame, Leaf, ArrowRight, Loader2, Barcode, AlertCircle, ZapOff, X } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 import { uploadMealPhoto, createMealRecord, analyzeMeal, getTodayMealCount } from '../lib/api'
 import MealAnalysis from './MealAnalysis'

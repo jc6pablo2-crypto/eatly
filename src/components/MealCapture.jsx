@@ -21,6 +21,7 @@ export default function MealCapture() {
     const { user, profile } = useAuth()
     const videoRef = useRef(null)
     const canvasRef = useRef(null)
+    const galleryRef = useRef(null)
     const [stream, setStream] = useState(null)
     const [capturedImage, setCapturedImage] = useState(null)
     const [status, setStatus] = useState('camera') // camera, scanning, simulated_result, analysis, limit_reached
@@ -315,7 +316,37 @@ export default function MealCapture() {
     // Go back to Dashboard
     const closeCapture = () => {
         stopCamera()
+        window.location.hash = ''
         window.location.reload()
+    }
+
+    // Handle gallery photo upload
+    const handleGalleryUpload = async (e) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        setStatus('scanning')
+        setIsAnalyzing(true)
+        if (requestRef.current) cancelAnimationFrame(requestRef.current)
+        setCapturedImage(URL.createObjectURL(file))
+        stopCamera()
+
+        try {
+            const imagePath = await uploadMealPhoto(user.id, file)
+            const mealRecord = await createMealRecord(user.id, imagePath, {})
+            setMealData(mealRecord)
+            setStatus('simulated_result')
+            const analysis = await analyzeMeal(mealRecord.id)
+            setAnalysisData(analysis)
+        } catch (error) {
+            console.error('Gallery upload error:', error)
+            alert("Erreur lors de l'analyse. Veuillez réessayer.")
+            setStatus('camera')
+            setCapturedImage(null)
+            startCamera()
+        } finally {
+            setIsAnalyzing(false)
+        }
     }
 
     if (status === 'analysis' && analysisData) {
@@ -469,8 +500,9 @@ export default function MealCapture() {
             {/* Bottom Camera Controls */}
             {status === 'camera' && (
                 <div className="absolute bottom-0 left-0 right-0 p-8 flex justify-between items-center z-20 pb-12">
-                    <button className="w-14 h-14 bg-white/20 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center text-white active:scale-95">
+                    <button onClick={() => galleryRef.current?.click()} className="w-14 h-14 bg-white/20 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center text-white active:scale-95">
                         <ImageIcon className="w-6 h-6" />
+                        <input ref={galleryRef} type="file" accept="image/*" onChange={handleGalleryUpload} className="hidden" />
                     </button>
 
                     {/* Main Capture Button */}

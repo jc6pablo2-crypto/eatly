@@ -46,7 +46,13 @@ export default function MealAnalysis({ image, meal, analysis, onClose }) {
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                     <h2 className="text-white font-bold text-lg">Analyse</h2>
-                    <button className="w-10 h-10 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white active:scale-95">
+                    <button onClick={() => {
+                        if (navigator.share) {
+                            navigator.share({ title: `Eatly — ${mainComponent}`, text: `J'ai scanné ${mainComponent} : ${macros.calories} kcal, Glow ${glowScore}`, url: window.location.href }).catch(() => { })
+                        } else {
+                            navigator.clipboard?.writeText(`${mainComponent} — ${macros.calories} kcal, Glow ${glowScore}`)
+                        }
+                    }} className="w-10 h-10 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white active:scale-95">
                         <Share2 className="w-5 h-5" />
                     </button>
                 </div>
@@ -68,15 +74,12 @@ export default function MealAnalysis({ image, meal, analysis, onClose }) {
                         <h1 className="text-[28px] font-extrabold text-foreground tracking-tight leading-tight mb-1 capitalize line-clamp-2">{mainComponent}</h1>
                         <p className="text-gray-400 text-[13px] font-medium">{dateStr}</p>
                     </div>
-                    <button className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-[0_8px_20px_rgba(59,130,246,0.3)] active:scale-95 transition-transform shrink-0">
-                        <Plus className="w-6 h-6" />
-                    </button>
                 </div>
 
                 {/* 4 Stat Grid */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                     <StatCard icon={Zap} iconColor="text-orange-500" iconBg="bg-orange-50" value={macros.calories} label="ÉNERGIE KCAL" />
-                    <StatCard icon={Sparkles} iconColor="text-purple-500" iconBg="bg-purple-50" value={glowScore > 80 ? "Élevé" : glowScore > 50 ? "Moyen" : "Faible"} label="INDICE GLOW" />
+                    <StatCard icon={Sparkles} iconColor="text-purple-500" iconBg="bg-purple-50" value={glowScore > 80 ? "Élevé" : glowScore > 50 ? "Moyen" : glowScore > 0 ? "Faible" : "N/A"} label="INDICE GLOW" />
                     <RingCard value={`${macros.protein_g}g`} label="PROTÉINES" colorClass="text-blue-500" ringClass="border-blue-500" />
                     <RingCard value={`${macros.fat_g}g`} label="LIPIDES" colorClass="text-red-500" ringClass="border-red-500" />
                 </div>

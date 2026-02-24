@@ -73,9 +73,16 @@ serve(async (req: Request) => {
             throw new Error('Could not download image: ' + downloadError.message)
         }
 
-        // Convert file to base64
+        // Convert file to base64 safely without throwing stack limit errors
         const arrayBuffer = await fileData.arrayBuffer()
-        const base64Image = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+        const uint8Array = new Uint8Array(arrayBuffer)
+        let binary = ''
+        const chunkSize = 8192
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+            const chunk = Array.from(uint8Array.subarray(i, i + chunkSize))
+            binary += String.fromCharCode.apply(null, chunk)
+        }
+        const base64Image = btoa(binary)
         const mediaType = 'image/jpeg'
 
         let systemPrompt = `You are an expert wellness, nutrition, and lifestyle AI. 

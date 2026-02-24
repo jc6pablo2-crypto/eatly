@@ -48,7 +48,7 @@ export default function Dashboard() {
             <main className="flex-1 overflow-y-auto w-full pb-28 hide-scrollbar">
                 {activeTab === 'home' && <HistoryTab onSeeAll={() => setActiveTab('diary')} onSelectMeal={setSelectedMeal} onShowProfile={() => setActiveTab('profile')} />}
                 {activeTab === 'diary' && <DiaryTab onSelectMeal={setSelectedMeal} />}
-                {activeTab === 'capture' && <MealCapture />}
+                {activeTab === 'capture' && <MealCapture onClose={() => setActiveTab('home')} />}
                 {activeTab === 'insights' && <InsightsTab onSwitchTab={setActiveTab} />}
                 {activeTab === 'profile' && <SettingsTab />}
                 {activeTab === 'premium' && <PaywallTab />}

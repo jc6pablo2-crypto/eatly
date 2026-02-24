@@ -17,7 +17,7 @@ const DICTIONARY = {
     'dining table': 'Table'
 }
 
-export default function MealCapture() {
+export default function MealCapture({ onClose }) {
     const { user, profile } = useAuth()
     const videoRef = useRef(null)
     const canvasRef = useRef(null)
@@ -336,8 +336,12 @@ export default function MealCapture() {
     // Go back to Dashboard
     const closeCapture = () => {
         stopCamera()
-        window.location.hash = ''
-        window.location.reload()
+        if (onClose) {
+            onClose()
+        } else {
+            window.location.hash = ''
+            window.location.reload()
+        }
     }
 
     // Handle gallery photo upload

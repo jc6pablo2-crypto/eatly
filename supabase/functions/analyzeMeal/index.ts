@@ -1,3 +1,8 @@
+/// <reference types="https://deno.land/x/types/index.d.ts" />
+
+// @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node.js
+// The IDE may show errors for Deno-specific imports and globals, but they work at runtime.
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -18,8 +23,8 @@ serve(async (req: Request) => {
         }
 
         const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+            Deno.env.get('SUPABASE_URL')!,
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
             { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
         )
 
@@ -54,7 +59,7 @@ serve(async (req: Request) => {
         // Convert file to base64
         const arrayBuffer = await fileData.arrayBuffer()
         const base64Image = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
-        const mediaType = 'image/jpeg' // we assume jpeg for now, or detect from extension
+        const mediaType = 'image/jpeg'
 
         let systemPrompt = `You are an expert wellness, nutrition, and lifestyle AI. 
 Analyze the provided meal image and return your analysis strictly as a JSON object with the following schema:
@@ -105,7 +110,7 @@ Nutriments: ${JSON.stringify(meal.context.nutriments)}`
             throw new Error('Anthropic API key is not configured')
         }
 
-        // Call Anthropic Vision (Claude 3 Haiku or Sonnet)
+        // Call Anthropic Vision (Claude 3.5 Sonnet)
         const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
@@ -148,19 +153,18 @@ Nutriments: ${JSON.stringify(meal.context.nutriments)}`
         const textContent = resultBody.content[0].text
 
         // Parse JSON
-        let analysisResult
+        let analysisResult: any
         try {
-            // Find JSON boundaries just in case
             const jsonStrMatch = textContent.match(/\{[\s\S]*\}/)
             analysisResult = JSON.parse(jsonStrMatch ? jsonStrMatch[0] : textContent)
-        } catch (e) {
+        } catch (_e) {
             throw new Error('Failed to parse Anthropic response as JSON: ' + textContent)
         }
 
-        // Save back to DB (Requires SERVICE ROLE if bypass needed, but user.id allows it)
+        // Save back to DB
         const adminSupabase = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+            Deno.env.get('SUPABASE_URL')!,
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
         )
 
         const { data: inserted, error: insertError } = await adminSupabase

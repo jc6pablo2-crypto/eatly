@@ -1,8 +1,13 @@
+/// <reference types="https://deno.land/x/types/index.d.ts" />
+
+// @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node.js
+// The IDE may show errors for Deno-specific imports and globals, but they work at runtime.
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import Stripe from 'https://esm.sh/stripe@14.14.0'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') as string, {
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
   apiVersion: '2023-10-16',
   httpClient: Stripe.createFetchHttpClient(),
 })
@@ -21,7 +26,7 @@ serve(async (req: Request) => {
     const body = await req.text()
 
     // Verify Stripe signature
-    let event;
+    let event: any;
     try {
       event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret, undefined, cryptoProvider);
     } catch (err: any) {
@@ -30,8 +35,8 @@ serve(async (req: Request) => {
     }
 
     const adminSupabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
     console.log(`Received event type: ${event.type}`)
@@ -50,7 +55,7 @@ serve(async (req: Request) => {
           .eq('stripe_customer_id', customerId)
 
         if (error) console.error('Update by customer_id failed:', error.message)
-        else console.log(`✅ User marked premium via customer_id: ${customerId}`)
+        else console.log(`User marked premium via customer_id: ${customerId}`)
       }
 
       // Also update by user_id as fallback (from client_reference_id)
@@ -61,7 +66,7 @@ serve(async (req: Request) => {
           .eq('user_id', userId)
 
         if (error) console.error('Update by user_id failed:', error.message)
-        else console.log(`✅ User marked premium via user_id: ${userId}`)
+        else console.log(`User marked premium via user_id: ${userId}`)
       }
     }
 
@@ -76,7 +81,7 @@ serve(async (req: Request) => {
           .update({ is_premium: true })
           .eq('stripe_customer_id', customerId)
 
-        console.log(`✅ Subscription renewed for customer: ${customerId}`)
+        console.log(`Subscription renewed for customer: ${customerId}`)
       }
     }
 
@@ -91,7 +96,7 @@ serve(async (req: Request) => {
           .update({ is_premium: false })
           .eq('stripe_customer_id', customerId)
 
-        console.log(`❌ Subscription cancelled for customer: ${customerId}`)
+        console.log(`Subscription cancelled for customer: ${customerId}`)
       }
     }
 
@@ -101,9 +106,7 @@ serve(async (req: Request) => {
       const customerId = invoice.customer as string
 
       if (customerId) {
-        console.warn(`⚠️ Payment failed for customer: ${customerId}`)
-        // Optionally mark user as past_due but still allow access for a grace period
-        // For now, don't revoke access immediately
+        console.warn(`Payment failed for customer: ${customerId}`)
       }
     }
 

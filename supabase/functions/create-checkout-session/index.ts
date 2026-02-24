@@ -1,3 +1,7 @@
+/// <reference types="https://deno.land/x/types/index.d.ts" />
+
+// @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node.js
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import Stripe from 'https://esm.sh/stripe@14.14.0'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'

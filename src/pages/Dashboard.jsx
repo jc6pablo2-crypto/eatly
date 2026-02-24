@@ -21,7 +21,7 @@ export default function Dashboard() {
                 {activeTab === 'home' && <HistoryTab onSeeAll={() => setActiveTab('diary')} onSelectMeal={setSelectedMeal} onShowProfile={() => setActiveTab('profile')} />}
                 {activeTab === 'diary' && <DiaryTab onSelectMeal={setSelectedMeal} />}
                 {activeTab === 'capture' && <MealCapture />}
-                {activeTab === 'insights' && <InsightsTab />}
+                {activeTab === 'insights' && <InsightsTab onSwitchTab={setActiveTab} />}
                 {activeTab === 'profile' && <SettingsTab />}
                 {activeTab === 'premium' && <PaywallTab />}
             </main>
@@ -70,19 +70,19 @@ function NavButton({ icon: Icon, label, active, onClick, isPremiumTab }) {
     return (
         <button onClick={onClick} className="flex flex-col items-center justify-center space-y-1.5 p-2 transition-all active:scale-95 group w-14">
             <div className={`p-1.5 rounded-xl transition-all duration-300 ${active
-                    ? isPremiumTab
-                        ? 'bg-yellow-50 text-yellow-600 scale-110 shadow-sm'
-                        : 'bg-brand-50 text-brand-600 scale-110 shadow-sm'
-                    : 'text-gray-400 group-hover:text-gray-600'
+                ? isPremiumTab
+                    ? 'bg-yellow-50 text-yellow-600 scale-110 shadow-sm'
+                    : 'bg-brand-50 text-brand-600 scale-110 shadow-sm'
+                : 'text-gray-400 group-hover:text-gray-600'
                 }`}>
                 <Icon className={`w-6 h-6 stroke-[2px] transition-colors ${active
-                        ? isPremiumTab ? 'fill-yellow-50/50' : 'fill-brand-50/50'
-                        : 'fill-transparent'
+                    ? isPremiumTab ? 'fill-yellow-50/50' : 'fill-brand-50/50'
+                    : 'fill-transparent'
                     }`} />
             </div>
             <span className={`text-[10px] font-bold tracking-wide transition-colors duration-300 ${active
-                    ? isPremiumTab ? 'text-yellow-600' : 'text-brand-600'
-                    : 'text-gray-400 group-hover:text-gray-600'
+                ? isPremiumTab ? 'text-yellow-600' : 'text-brand-600'
+                : 'text-gray-400 group-hover:text-gray-600'
                 }`}>
                 {label}
             </span>

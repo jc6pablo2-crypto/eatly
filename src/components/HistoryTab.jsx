@@ -89,7 +89,23 @@ export default function HistoryTab({ onSeeAll, onSelectMeal, onShowProfile }) {
             {/* Header */}
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <p className="text-gray-400 font-semibold mb-1 text-[15px]">{today.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="relative w-8 h-8 flex items-center justify-center">
+                            <svg viewBox="0 0 100 100" className="w-8 h-8 drop-shadow-sm">
+                                <defs>
+                                    <linearGradient id="logoGradHist" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#38bbbf" />
+                                        <stop offset="100%" stopColor="#f9836b" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M50 95 C 50 95, 10 65, 10 35 C 10 15, 30 5, 50 20 C 70 5, 90 15, 90 35 C 90 65, 50 95, 50 95 Z" fill="url(#logoGradHist)" />
+                                <path d="M25 45 Q 50 20 75 35 Q 50 60 25 45 Z" fill="#ffffff" opacity="0.9" />
+                                <path d="M32 43 Q 50 28 68 37 Q 50 52 32 43 Z" fill="url(#logoGradHist)" opacity="0.8" />
+                            </svg>
+                        </div>
+                        <span className="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-accent-500">Eatly</span>
+                    </div>
+                    <p className="text-gray-400 font-semibold mb-1 text-[13px] uppercase tracking-wider">{today.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                     <h1 className="text-3xl font-extrabold tracking-tight text-foreground capitalize">Bonjour {displayName}</h1>
                 </div>
                 <div className="flex items-center gap-3">

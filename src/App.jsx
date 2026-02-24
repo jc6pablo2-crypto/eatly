@@ -37,7 +37,11 @@ function App() {
         <Route path="/verify" element={user && !loading ? <Navigate to="/" replace /> : <VerifyEmail />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/success" element={<Success />} />
+        <Route path="/success" element={
+          <PrivateRoute>
+            <Success />
+          </PrivateRoute>
+        } />
 
         <Route path="/onboarding" element={
           <PrivateRoute>

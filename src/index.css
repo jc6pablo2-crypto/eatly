@@ -114,4 +114,20 @@
       background-position: 0% 50%;
     }
   }
+
+  .animate-scan-bounce {
+    animation: scan-bounce 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes scan-bounce {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(230%);
+    }
+  }
 }

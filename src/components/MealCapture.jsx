@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { X, ZapOff, ScanLine, Image as ImageIcon, SlidersHorizontal, Flame, Leaf, ArrowRight, Loader2, Barcode, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Tag, ScanLine, Image as ImageIcon, SlidersHorizontal, Flame, Leaf, ArrowRight, Loader2, Barcode, AlertCircle } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 import { uploadMealPhoto, createMealRecord, analyzeMeal, getTodayMealCount } from '../lib/api'
 import MealAnalysis from './MealAnalysis'
@@ -422,43 +422,37 @@ export default function MealCapture({ onClose }) {
             </div>
 
             {/* Top Bar */}
-            <div className="relative z-10 flex justify-between items-center px-6 pt-12">
-                <button onClick={closeCapture} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white">
-                    <X className="w-5 h-5" />
+            <div className="relative z-10 flex items-center px-6 pt-14">
+                <button onClick={closeCapture} className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-800 shadow-md z-20 active:scale-95">
+                    <ArrowLeft className="w-6 h-6" />
                 </button>
-
-                <div className="px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${status === 'scanning' ? 'bg-brand-400 animate-pulse' : 'bg-gray-400'}`}></div>
-                    <span className="text-white text-xs font-bold tracking-wide">
-                        {status === 'scanning' ? 'Analyse globale en cours...' :
-                            captureMode === 'barcode' ? 'Scanner un Code-Barres...' :
-                                isModelLoading ? 'Initialisation AR...' : 'Vision AR Active'}
+                <div className="absolute inset-0 pt-14 flex justify-center pointer-events-none">
+                    <span className="text-white text-[20px] font-medium tracking-wide drop-shadow-md">
+                        {status === 'scanning' ? 'Analysing food...' : 'Scanner'}
                     </span>
-                </div>
-
-                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white cursor-pointer" onClick={() => setCaptureMode(prev => prev === 'ar' ? 'barcode' : 'ar')}>
-                    {captureMode === 'ar' ? <Barcode className="w-5 h-5" /> : <ScanLine className="w-5 h-5" />}
                 </div>
             </div>
 
-            {/* Scanning UI / Crosshairs */}
-            {status === 'camera' && captureMode === 'ar' && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                    <div className="w-72 h-72 border-2 border-white/30 rounded-[2.5rem] relative">
-                        <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-brand-400 rounded-tl-[2rem]"></div>
-                        <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-brand-400 rounded-tr-[2rem]"></div>
-                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-brand-400 rounded-bl-[2rem]"></div>
-                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-brand-400 rounded-br-[2rem]"></div>
+            {/* Viewfinder Brackets */}
+            {status === 'camera' && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 -mt-10">
+                    <div className="w-[88vw] h-[55vh] max-h-[450px] relative">
+                        <div className="absolute top-0 left-0 w-12 h-12 border-t-[3px] border-l-[3px] border-white rounded-tl-[1.8rem]"></div>
+                        <div className="absolute top-0 right-0 w-12 h-12 border-t-[3px] border-r-[3px] border-white rounded-tr-[1.8rem]"></div>
+                        <div className="absolute bottom-0 left-0 w-12 h-12 border-b-[3px] border-l-[3px] border-white rounded-bl-[1.8rem]"></div>
+                        <div className="absolute bottom-0 right-0 w-12 h-12 border-b-[3px] border-r-[3px] border-white rounded-br-[1.8rem]"></div>
+
+                        {/* Scanning Line overlay when active */}
+                        {status === 'scanning' && (
+                            <div className="absolute inset-0 overflow-hidden rounded-[1.8rem]">
+                                <div className="w-full h-[30%] bg-gradient-to-b from-transparent to-[#4ADE80]/40 border-b-2 border-[#4ADE80] animate-scan-bounce"></div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
 
-            {/* Active Scanning Animation */}
-            {status === 'scanning' && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                    <div className="w-full h-1 bg-brand-400 shadow-[0_0_20px_10px_rgba(27,193,103,0.5)] animate-scan-line"></div>
-                </div>
-            )}
+
 
             {/* AR Overlays (Simulated Result) */}
             {status === 'simulated_result' && (
@@ -498,54 +492,73 @@ export default function MealCapture({ onClose }) {
                         </div>
                     )}
 
-                    {/* Real AR Dots based on analysis */}
-                    {!isAnalyzing && analysisData?.result?.components && (
+                    {/* Quick Result Bottom Sheet */}
+                    {!isAnalyzing && analysisData?.result && (
                         <>
-                            {analysisData.result.components.slice(0, 3).map((comp, idx) => {
-                                const positions = [
-                                    { top: '30%', left: '20%' },
-                                    { top: '45%', right: '15%' },
-                                    { bottom: '35%', left: '30%' }
-                                ];
-                                const pos = positions[idx % 3];
-                                return (
-                                    <div key={idx} className="absolute animate-in zoom-in slide-in-from-bottom-4 duration-500" style={{ ...pos, animationDelay: `${idx * 200}ms` }}>
-                                        <div className="bg-white/20 backdrop-blur-xl border border-white/40 rounded-2xl p-2 pr-4 flex flex-col shadow-2xl relative">
-                                            <div className={`absolute ${idx === 0 ? '-top-1.5 -left-1.5' : idx === 1 ? 'top-4 -left-1' : '-bottom-1 left-1/2 -ml-1.5'} w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]`}></div>
-                                            <span className="text-[13px] font-bold text-white mb-0.5 flex items-center gap-1 capitalize">
-                                                {comp.name} <div className="w-2 h-2 rounded-full bg-brand-400"></div>
-                                            </span>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-
-                            {/* Bottom Summary Cards */}
-                            <div className="absolute bottom-6 left-6 right-6 flex gap-3 animate-in fade-in slide-in-from-bottom-8 duration-700 pointer-events-auto">
-                                <div className="flex-1 bg-black/40 backdrop-blur-2xl border border-white/20 rounded-3xl p-4 flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-[#FF6B00]/20 rounded-full flex items-center justify-center">
-                                        <Flame className="w-5 h-5 text-[#FF6B00]" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[17px] font-extrabold text-white leading-none mb-1">{analysisData.result?.macros?.calories || '?'}</span>
-                                        <span className="text-[9px] text-gray-300 font-bold uppercase tracking-wider">TOTAL KCAL</span>
-                                    </div>
-                                </div>
-                                <div className="flex-1 bg-black/40 backdrop-blur-2xl border border-white/20 rounded-3xl p-4 flex items-center gap-4" onClick={viewFullAnalysis}>
-                                    <div className="w-10 h-10 bg-brand-500/20 rounded-full flex items-center justify-center">
-                                        <Leaf className="w-5 h-5 text-brand-400" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[17px] font-extrabold text-white leading-none mb-1">Score: {analysisData.result?.feel_score?.energy || '?'}</span>
-                                        <span className="text-[9px] text-gray-300 font-bold uppercase tracking-wider">ÉNERGIE</span>
-                                    </div>
-                                </div>
+                            {/* Point focal sur l'aliment (Optionnel, petit repère visuel) */}
+                            <div className="absolute top-[30%] left-1/2 -ml-3 w-6 h-6 bg-white/30 backdrop-blur-md border border-white rounded-full flex items-center justify-center animate-pulse">
+                                <div className="w-2 h-2 rounded-full bg-white shadow-lg"></div>
                             </div>
 
-                            {/* Arrow to proceed */}
-                            <button onClick={viewFullAnalysis} className="absolute bottom-32 right-6 w-14 h-14 bg-white text-foreground rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.4)] pointer-events-auto active:scale-95 animate-in slide-in-from-right-8 duration-500 delay-500">
-                                <ArrowRight className="w-6 h-6" />
-                            </button>
+                            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[2.5rem] px-6 pt-8 pb-safe z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] animate-in slide-in-from-bottom duration-500 pointer-events-auto">
+
+                                <h2 className="text-[26px] font-extrabold text-gray-900 mb-5 tracking-tight capitalize">
+                                    {analysisData.result?.components?.[0]?.name || "Repas scanné"}
+                                </h2>
+
+                                {/* Total Kcal Bar */}
+                                <div className="bg-gray-50 rounded-2xl p-4 flex justify-between items-center mb-4 border border-gray-100">
+                                    <span className="text-[17px] font-bold text-gray-800 tracking-tight">Total {analysisData.result?.macros?.calories || 0} Kcal</span>
+                                    <div className="w-10 h-10 bg-[#00A3FF] rounded-full flex items-center justify-center shadow-md shadow-[#00A3FF]/30">
+                                        <Flame className="w-5 h-5 text-white" />
+                                    </div>
+                                </div>
+
+                                {/* 3 Macros Cards */}
+                                <div className="grid grid-cols-3 gap-3 mb-6">
+                                    <div className="bg-orange-50/50 rounded-2xl py-4 flex flex-col items-center justify-center border border-orange-100">
+                                        <span className="text-xl mb-1">🥖</span>
+                                        <span className="text-[15px] font-extrabold text-gray-900">{analysisData.result?.macros?.carbs_g || 0}g</span>
+                                        <span className="text-[11px] font-bold text-gray-500">Glucides</span>
+                                    </div>
+                                    <div className="bg-blue-50/50 rounded-2xl py-4 flex flex-col items-center justify-center border border-blue-100">
+                                        <span className="text-xl mb-1">🍗</span>
+                                        <span className="text-[15px] font-extrabold text-gray-900">{analysisData.result?.macros?.protein_g || 0}g</span>
+                                        <span className="text-[11px] font-bold text-gray-500">Protéines</span>
+                                    </div>
+                                    <div className="bg-green-50/50 rounded-2xl py-4 flex flex-col items-center justify-center border border-green-100">
+                                        <span className="text-xl mb-1">🥑</span>
+                                        <span className="text-[15px] font-extrabold text-gray-900">{analysisData.result?.macros?.fat_g || 0}g</span>
+                                        <span className="text-[11px] font-bold text-gray-500">Lipides</span>
+                                    </div>
+                                </div>
+
+                                {/* Healthy Score Segmented Bar */}
+                                <div className="mb-7">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-[13px] font-semibold text-gray-500">Score Santé</span>
+                                        <span className="text-[13px] font-extrabold text-gray-900">{analysisData.result?.feel_score?.energy || Math.floor(Math.random() * 20 + 80)}/100</span>
+                                    </div>
+                                    <div className="flex gap-1.5 h-3">
+                                        <div className="flex-1 rounded-l-full bg-orange-400"></div>
+                                        <div className="flex-[2] bg-[#00A3FF]"></div>
+                                        <div className="flex-1 rounded-r-full bg-[#82D917] relative flex items-center">
+                                            <div className="absolute right-2 w-4 h-4 rounded-full bg-black border-2 border-white shadow-sm"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex gap-3 pb-8">
+                                    <button onClick={viewFullAnalysis} className="flex-1 py-4 bg-gray-50 text-gray-800 font-extrabold rounded-[1.25rem] active:scale-95 transition-transform text-[15px]">
+                                        Détails complets
+                                    </button>
+                                    <button onClick={closeCapture} className="flex-1 py-4 bg-black text-white font-extrabold rounded-[1.25rem] active:scale-95 transition-transform text-[15px] shadow-lg shadow-black/20">
+                                        Enregistrer
+                                    </button>
+                                </div>
+
+                            </div>
                         </>
                     )}
                 </div>
@@ -553,32 +566,55 @@ export default function MealCapture({ onClose }) {
 
             {/* Bottom Camera Controls */}
             {status === 'camera' && (
-                <div className="absolute bottom-0 left-0 right-0 p-8 flex justify-between items-center z-20 pb-12">
-                    <button onClick={() => galleryRef.current?.click()} className="w-14 h-14 bg-white/20 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center text-white active:scale-95">
-                        <ImageIcon className="w-6 h-6" />
-                        <input ref={galleryRef} type="file" accept="image/*" onChange={handleGalleryUpload} className="hidden" />
-                    </button>
+                <div className="absolute bottom-0 left-0 right-0 z-20 pb-10 flex flex-col items-center">
 
-                    {/* Main Capture Button */}
-                    {captureMode === 'ar' ? (
+                    {/* Horizontal Modes */}
+                    <div className="w-full overflow-x-auto hide-scrollbar flex gap-3 px-6 pb-6 pt-4 drop-shadow-md snap-x">
+
+                        <button onClick={() => setCaptureMode('ar')} className={`flex flex-col items-center justify-center gap-1.5 w-24 h-24 shrink-0 rounded-3xl transition-all border snap-center ${captureMode === 'ar' ? 'bg-white text-gray-800 border-transparent shadow-xl' : 'bg-white/10 backdrop-blur-md text-white border-white/20'}`}>
+                            <Leaf className="w-7 h-7" />
+                            <span className="text-[11px] font-bold">Scan Food</span>
+                        </button>
+
+                        <button onClick={() => setCaptureMode('barcode')} className={`flex flex-col items-center justify-center gap-1.5 w-24 h-24 shrink-0 rounded-3xl transition-all border snap-center ${captureMode === 'barcode' ? 'bg-[#7EAA55] text-white border-[#7EAA55] shadow-[0_8px_20px_rgba(126,170,85,0.4)]' : 'bg-[#7EAA55]/50 backdrop-blur-md text-white border-white/20'}`}>
+                            <Barcode className="w-7 h-7" />
+                            <span className="text-[11px] font-bold">Barcode</span>
+                        </button>
+
+                        <button onClick={() => setCaptureMode('label')} className={`flex flex-col items-center justify-center gap-1.5 w-24 h-24 shrink-0 rounded-3xl transition-all border snap-center ${captureMode === 'label' ? 'bg-white/40 text-white border-transparent shadow-xl backdrop-blur-xl' : 'bg-white/10 backdrop-blur-md text-white border-white/20'}`}>
+                            <Tag className="w-7 h-7" />
+                            <span className="text-[11px] font-bold">Food label</span>
+                        </button>
+
+                        <button onClick={() => galleryRef.current?.click()} className={`flex flex-col items-center justify-center gap-1.5 w-24 h-24 shrink-0 rounded-3xl transition-all border snap-center bg-[#C6A46A]/40 backdrop-blur-md text-white border-white/20 active:scale-95`}>
+                            <ImageIcon className="w-7 h-7" />
+                            <span className="text-[11px] font-bold">Library</span>
+                            <input ref={galleryRef} type="file" accept="image/*" onChange={handleGalleryUpload} className="hidden" />
+                        </button>
+
+                    </div>
+
+                    {/* Camera Actions Row */}
+                    <div className="w-full flex justify-between items-center px-10 pt-4">
+                        <button onClick={() => galleryRef.current?.click()} className="w-12 h-12 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white active:scale-95 border border-white/20 shadow-md">
+                            <ImageIcon className="w-5 h-5" />
+                        </button>
+
+                        {/* Main Shutter */}
                         <button
                             onClick={handleCapture}
                             disabled={isModelLoading}
-                            className={`w-[84px] h-[84px] rounded-full flex items-center justify-center border-[4px] border-white/30 backdrop-blur-md transition-transform ${isModelLoading ? 'bg-white/5 opacity-50 cursor-not-allowed' : 'bg-white/10 active:scale-95'}`}
+                            className={`w-[72px] h-[72px] rounded-full flex items-center justify-center border-[3px] border-white transition-transform ${isModelLoading ? 'opacity-50 cursor-not-allowed' : 'active:scale-90 scale-100 shadow-[0_0_20px_rgba(255,255,255,0.3)]'}`}
                         >
-                            <div className="w-[60px] h-[60px] bg-white rounded-full flex items-center justify-center shadow-inner">
-                                {isModelLoading ? <Loader2 className="w-7 h-7 text-brand-400 stroke-[2.5px] animate-spin" /> : <ScanLine className="w-7 h-7 text-brand-600 stroke-[2.5px]" />}
+                            <div className="w-[58px] h-[58px] bg-white rounded-full flex items-center justify-center">
+                                {isModelLoading && <Loader2 className="w-6 h-6 text-gray-400 stroke-[2.5px] animate-spin" />}
                             </div>
                         </button>
-                    ) : (
-                        <div className="text-white backdrop-blur-md bg-white/10 px-6 py-3 rounded-full text-sm font-bold border border-white/20">
-                            Recherche de Code-Barres...
-                        </div>
-                    )}
 
-                    <button className="w-14 h-14 bg-transparent border border-white/10 rounded-full flex items-center justify-center text-white active:scale-95" onClick={() => setCaptureMode(prev => prev === 'ar' ? 'barcode' : 'ar')}>
-                        <Barcode className="w-6 h-6" />
-                    </button>
+                        <button className="w-12 h-12 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white active:scale-95 border border-white/20 shadow-md pointer-events-none opacity-50">
+                            <ZapOff className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
             )}
 

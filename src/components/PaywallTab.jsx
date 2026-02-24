@@ -1,9 +1,54 @@
-import { Sparkles, ArrowRight, Lock, Crown, Zap, BarChart3, History } from 'lucide-react'
+import { useState } from 'react'
+import { Sparkles, ArrowRight, Lock, Crown, Zap, BarChart3, History, Loader2 } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
+import { supabase } from '../lib/supabaseClient'
+
+const PRICE_ID = 'price_1T490U47SpUR9TmodZR66zOl'
 
 export default function PaywallTab() {
-    const { profile } = useAuth()
+    const { user, profile } = useAuth()
     const isPremium = profile?.is_premium
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
+
+    const handleCheckout = async () => {
+        if (!user) return
+        setLoading(true)
+        setError(null)
+
+        try {
+            const { data: { session: authSession } } = await supabase.auth.getSession()
+            const token = authSession?.access_token
+
+            const res = await fetch(
+                `https://okvemteinuvwmemnfiog.supabase.co/functions/v1/create-checkout-session`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        priceId: PRICE_ID,
+                        successUrl: `${window.location.origin}/success`,
+                        cancelUrl: `${window.location.origin}/dashboard`,
+                    }),
+                }
+            )
+
+            const data = await res.json()
+
+            if (data.url) {
+                window.location.href = data.url
+            } else {
+                setError(data.error || 'Erreur lors de la création de la session de paiement.')
+            }
+        } catch (err) {
+            console.error('Checkout error:', err)
+            setError('Impossible de contacter le serveur. Vérifiez votre connexion.')
+        }
+        setLoading(false)
+    }
 
     if (isPremium) {
         return (
@@ -60,8 +105,14 @@ export default function PaywallTab() {
                     </div>
                     <p className="text-xs text-gray-400 mb-4">Annulez à tout moment</p>
 
-                    <button className="w-full py-4 text-center rounded-2xl bg-foreground text-white font-extrabold text-lg hover:bg-gray-800 flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl shadow-foreground/20">
-                        Devenir Premium <Sparkles className="w-5 h-5" />
+                    {error && <p className="text-red-500 text-xs font-medium mb-3 bg-red-50 p-2 rounded-xl">{error}</p>}
+
+                    <button
+                        onClick={handleCheckout}
+                        disabled={loading}
+                        className="w-full py-4 text-center rounded-2xl bg-foreground text-white font-extrabold text-lg hover:bg-gray-800 flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl shadow-foreground/20 disabled:opacity-50"
+                    >
+                        {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>Devenir Premium <Sparkles className="w-5 h-5" /></>}
                     </button>
                 </div>
             </div>

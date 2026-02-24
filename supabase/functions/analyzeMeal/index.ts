@@ -97,7 +97,7 @@ Analyze the provided meal image and return your analysis strictly as a JSON obje
   "warnings": ["string"],
   "prediction": {"energy_impact": "string (impact of this meal on energy over the next few hours)", "advice": "string (proactive tip to balance the meal)", "fatigue_warning": boolean (true if the meal might cause a blood sugar spike or crash, false otherwise)}
 }
-Only return the JSON and nothing else. Respond in French. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach.`
+IMPORTANT: You MUST return ONLY a valid JSON object. Do not include any introductory text, closing text, or markdown code block syntax (like \`\`\`json). All textual values inside the JSON should be in French, but keep the exact JSON keys as defined above. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach.`
 
         let userPromptText = "Analyze this meal photo."
 
@@ -117,7 +117,7 @@ Return your analysis strictly as a JSON object with the following schema:
   "warnings": ["string"],
   "prediction": {"energy_impact": "string", "advice": "string", "fatigue_warning": boolean}
 }
-Only return the JSON and nothing else. Respond in French. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach, but be very clear about industrial food risks.`
+IMPORTANT: You MUST return ONLY a valid JSON object. Do not include any introductory text, closing text, or markdown code block syntax (like \`\`\`json). All textual values inside the JSON should be in French, but keep the exact JSON keys as defined above. Ensure your tone is positive, non-judgmental, and acts as a proactive health coach, but be very clear about industrial food risks.`
 
                 userPromptText = `Analyze this barcode product. 
 Product Name: ${meal.context.product_name}
@@ -176,13 +176,17 @@ Nutriments: ${JSON.stringify(meal.context.nutriments)}`
         const resultBody = await anthropicResponse.json()
         const textContent = resultBody.content[0].text
 
-        // Parse JSON
+        // Parse JSON safely
         let analysisResult: any
         try {
-            const jsonStrMatch = textContent.match(/\{[\s\S]*\}/)
-            analysisResult = JSON.parse(jsonStrMatch ? jsonStrMatch[0] : textContent)
+            // Strip out markdown code blocks if the AI ignored the instruction
+            let cleanText = textContent.replace(/```json/gi, '').replace(/```/g, '').trim()
+            // Try to extract just the first JSON object
+            const jsonStrMatch = cleanText.match(/\{[\s\S]*\}/)
+            cleanText = jsonStrMatch ? jsonStrMatch[0] : cleanText
+            analysisResult = JSON.parse(cleanText)
         } catch (_e) {
-            throw new Error('Failed to parse Anthropic response as JSON: ' + textContent)
+            throw new Error('Failed to parse Anthropic response as JSON. AI Response: ' + textContent)
         }
 
         // Save back to DB

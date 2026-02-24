@@ -244,9 +244,15 @@ export default function MealCapture() {
                     setMealData(mealRecord)
 
                     setStatus('simulated_result')
-                    const analysis = await analyzeMeal(mealRecord.id)
-                    setAnalysisData(analysis)
-                    setIsAnalyzing(false)
+                    try {
+                        const analysis = await analyzeMeal(mealRecord.id)
+                        setAnalysisData(analysis)
+                    } catch (aiError) {
+                        console.error('[Eatly] Barcode AI Analysis failed:', aiError.message)
+                        setCaptureError(`Analyse IA indisponible: ${aiError.message}`)
+                    } finally {
+                        setIsAnalyzing(false)
+                    }
                 }, 'image/jpeg', 0.8)
             } else {
                 throw new Error("Produit non trouvé")
@@ -350,11 +356,17 @@ export default function MealCapture() {
             const mealRecord = await createMealRecord(user.id, imagePath, {})
             setMealData(mealRecord)
             setStatus('simulated_result')
-            const analysis = await analyzeMeal(mealRecord.id)
-            setAnalysisData(analysis)
+
+            try {
+                const analysis = await analyzeMeal(mealRecord.id)
+                setAnalysisData(analysis)
+            } catch (aiError) {
+                console.error('[Eatly] AI Analysis failed (Gallery):', aiError.message)
+                setCaptureError(`Analyse IA indisponible: ${aiError.message}`)
+            }
         } catch (error) {
             console.error('Gallery upload error:', error)
-            alert("Erreur lors de l'analyse. Veuillez réessayer.")
+            setCaptureError(error.message)
             setStatus('camera')
             setCapturedImage(null)
             startCamera()

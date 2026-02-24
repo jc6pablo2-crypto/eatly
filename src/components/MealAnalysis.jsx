@@ -16,13 +16,14 @@ export default function MealAnalysis({ image, meal, analysis, onClose }) {
     const calculateGlow = () => {
         if (!ai.feel_score) return 0
         const vals = Object.values(ai.feel_score)
+        if (vals.length === 0) return 0
         return Math.floor(vals.reduce((a, b) => a + b, 0) / vals.length)
     }
     const glowScore = calculateGlow()
 
     // format date
     const dateStr = new Date(meal?.created_at || new Date()).toLocaleString('fr-FR', { weekday: 'short', hour: 'numeric', minute: 'numeric' })
-    const mainComponent = ai.components?.[0]?.name || "Repas sain"
+    const mainComponent = ai.components?.[0]?.name || "Repas scanné"
 
     return (
         <div className="fixed inset-0 z-[200] bg-[#F7F9FA] overflow-y-auto animate-in slide-in-from-bottom duration-500 flex flex-col">

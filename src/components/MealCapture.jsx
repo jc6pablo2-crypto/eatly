@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { X, ZapOff, ScanLine, Image as ImageIcon, SlidersHorizontal, Flame, Leaf, ArrowRight, Loader2, Barcode } from 'lucide-react'
+import { X, ZapOff, ScanLine, Image as ImageIcon, SlidersHorizontal, Flame, Leaf, ArrowRight, Loader2, Barcode, AlertCircle } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 import { uploadMealPhoto, createMealRecord, analyzeMeal, getTodayMealCount } from '../lib/api'
 import MealAnalysis from './MealAnalysis'
@@ -39,6 +39,7 @@ export default function MealCapture() {
     const [mealData, setMealData] = useState(null)
     const [analysisData, setAnalysisData] = useState(null)
     const [isAnalyzing, setIsAnalyzing] = useState(false)
+    const [captureError, setCaptureError] = useState(null)
 
     // Start Camera and Load TF Model on load
     useEffect(() => {
@@ -282,25 +283,38 @@ export default function MealCapture() {
             const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' })
             setCapturedImage(URL.createObjectURL(blob))
             stopCamera()
+            setCaptureError(null)
 
             try {
-                // 1. Upload to Storage
+                // Step 1: Upload photo to Supabase Storage
+                console.log('[Eatly] Uploading photo...')
                 const imagePath = await uploadMealPhoto(user.id, file)
+                console.log('[Eatly] Upload OK:', imagePath)
 
-                // 2. Create DB Record
+                // Step 2: Create DB record
+                console.log('[Eatly] Creating meal record...')
                 const mealRecord = await createMealRecord(user.id, imagePath, {})
                 setMealData(mealRecord)
+                console.log('[Eatly] Meal record created:', mealRecord.id)
 
-                // 3. Move to simulated result
+                // Step 3: Move to simulated result (photo saved successfully)
                 setStatus('simulated_result')
 
-                // 4. Edge Function Analysis
-                const analysis = await analyzeMeal(mealRecord.id)
-                setAnalysisData(analysis)
+                // Step 4: AI Analysis (can fail gracefully)
+                try {
+                    console.log('[Eatly] Starting AI analysis...')
+                    const analysis = await analyzeMeal(mealRecord.id)
+                    setAnalysisData(analysis)
+                    console.log('[Eatly] Analysis complete ✓')
+                } catch (aiError) {
+                    console.error('[Eatly] AI Analysis failed:', aiError.message)
+                    setCaptureError(`Analyse IA indisponible: ${aiError.message}`)
+                    // Meal is still saved, user can continue
+                }
 
             } catch (error) {
-                console.error("Capture failing", error)
-                alert("Erreur lors de l'analyse du repas. Veuillez réessayer.")
+                console.error('[Eatly] Capture pipeline failed:', error.message)
+                setCaptureError(error.message)
                 setStatus('camera')
                 setCapturedImage(null)
                 startCamera()
@@ -434,13 +448,37 @@ export default function MealCapture() {
             {status === 'simulated_result' && (
                 <div className="absolute inset-0 pointer-events-none z-20 pt-32 pb-60 relative">
 
-                    {/* Wait for analysis */}
-                    {isAnalyzing && (
+                    {/* Wait for analysis or show error */}
+                    {isAnalyzing && !captureError && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto">
                             <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-3xl flex items-center justify-center animate-pulse border border-white/30">
                                 <Loader2 className="w-8 h-8 text-white animate-spin" />
                             </div>
                             <span className="text-white mt-4 font-bold tracking-wide animate-pulse">Eatly extrait la nutrition...</span>
+                        </div>
+                    )}
+
+                    {/* Show error banner if analysis failed but meal saved */}
+                    {captureError && status === 'simulated_result' && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto px-6">
+                            <div className="w-full bg-white/95 backdrop-blur-xl rounded-[2rem] p-6 shadow-2xl border border-red-100 animate-in slide-in-from-bottom duration-300">
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+                                        <AlertCircle className="w-8 h-8 text-red-500" />
+                                    </div>
+                                    <h3 className="text-foreground font-extrabold text-xl mb-2">Erreur d'analyse</h3>
+                                    <p className="text-gray-500 text-sm font-medium mb-6">
+                                        La photo a été sauvegardée, mais l'analyse IA n'a pas pu aboutir.<br />
+                                        <span className="text-xs text-gray-400 mt-2 block break-all">{captureError}</span>
+                                    </p>
+                                    <button
+                                        onClick={viewFullAnalysis}
+                                        className="w-full py-4 text-center rounded-[1.25rem] bg-foreground text-white font-extrabold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl"
+                                    >
+                                        Continuer sans analyse <ArrowRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
 

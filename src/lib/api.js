@@ -8,7 +8,10 @@ export async function uploadMealPhoto(userId, file) {
         .from('meal_photos')
         .upload(fileName, file)
 
-    if (error) throw error
+    if (error) {
+        console.error('[Eatly] Upload failed:', error.message, error)
+        throw new Error(`Upload échoué: ${error.message}`)
+    }
     return data.path
 }
 
@@ -23,13 +26,20 @@ export async function createMealRecord(userId, imagePath, context) {
         .select()
         .single()
 
-    if (error) throw error
+    if (error) {
+        console.error('[Eatly] Meal insert failed:', error.message, error)
+        throw new Error(`Enregistrement échoué: ${error.message}`)
+    }
     return data
 }
 
 export async function analyzeMeal(mealId) {
     const { data: sessionData } = await supabase.auth.getSession()
     const token = sessionData?.session?.access_token
+
+    if (!token) {
+        throw new Error('Session expirée. Reconnectez-vous.')
+    }
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
     const response = await fetch(`${supabaseUrl}/functions/v1/analyzeMeal`, {
@@ -43,7 +53,8 @@ export async function analyzeMeal(mealId) {
 
     if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Analysis failed: ${errorText}`)
+        console.error('[Eatly] Edge Function error:', response.status, errorText)
+        throw new Error(`Analyse IA échouée (${response.status}): ${errorText}`)
     }
 
     return response.json()
@@ -102,8 +113,6 @@ export async function getTodayMealCount(userId) {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    // We can't easily query just count by itself in a single simple call without counting rows
-    // Let's use the exact select syntax with { count: 'exact' }
     const { count, error } = await supabase
         .from('meals')
         .select('*', { count: 'exact', head: true })
